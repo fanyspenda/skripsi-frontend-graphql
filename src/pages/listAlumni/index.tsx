@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Card, Grid, Button, Label } from "semantic-ui-react";
-import ApolloClient, { gql } from "apollo-boost";
+import { gql } from "apollo-boost";
 import axios from "axios";
 import AlumniCard from "./alumniCard";
 import { page } from "interfaces/pageInterface";
+import { useQuery } from "@apollo/react-hooks";
 
 interface alumniListInterface {
 	_id: string;
@@ -14,39 +15,30 @@ interface alumniListInterface {
 	data_source: string;
 }
 
-const ListAlumni: React.FunctionComponent<{}> = () => {
-	const [currentPageLinkedin, setCurrentPageLinkedin] = useState(1);
-	const [alumniLinkedinPage, setAlumniLinkedinPage] = useState<page[]>([
-		{
-			number: 1,
-			url: "",
-		},
-	]);
-	const [alumniLinkedin, setAlumniLinkedin] = useState<alumniListInterface[]>(
-		[
-			{
-				_id: "",
-				name: "",
-				work_at: "",
-				work_position: "",
-				email: "",
-				data_source: "",
-			},
-		]
-	);
-	const [currentPage, setCurrentPage] = useState(1);
-	const [alumniPage, setAlumniPage] = useState(1);
-	const [alumnis, setAlumnis] = useState<alumniListInterface[]>([
-		{
-			_id: "",
-			name: "",
-			work_at: "",
-			work_position: "",
-			email: "",
-			data_source: "",
-		},
-	]);
+const getLinkedinAndPagination = gql`
+	{
+		queryLinkedin(page: 1, limit: 40) {
+			alumniLinkedin {
+				_id
+				name
+				work_at
+				work_position
+				email
+				data_source
+			}
+			linkedinPage {
+				totalPage
+				pages {
+					page
+					skip
+				}
+			}
+		}
+	}
+`;
 
+const ListAlumni: React.FunctionComponent<{}> = () => {
+	const { loading, error, data } = useQuery(getLinkedinAndPagination);
 	const handleLinkedinScrap = () => {
 		axios
 			.get("http://localhost:5000/scraper")
@@ -58,64 +50,19 @@ const ListAlumni: React.FunctionComponent<{}> = () => {
 			});
 	};
 
-	const handlePageClick = (pageNumber: number, url: string) => {
-		axios
-			.get(`http://localhost:4000${url}`, {
-				headers: {
-					authorization: "bearer " + localStorage.getItem("token"),
-				},
-			})
-			.then((res) => {
-				setAlumniLinkedin(res.data.data);
-				setAlumniLinkedinPage(res.data.pages);
-				setCurrentPageLinkedin(pageNumber);
-			})
-			.catch((err) => {
-				alert(err);
-			});
-	};
-
-	useEffect(() => {
-		axios
-			.get("http://localhost:4000/alumni?page=1&limit=40", {
-				headers: {
-					authorization: "bearer " + localStorage.getItem("token"),
-				},
-			})
-			.then((res1) => {
-				console.log(res1.data);
-				setAlumnis(res1.data.data);
-			})
-			.catch((err) => {
-				alert("gagal mengambil data dari input manual alumni!");
-				console.log(err);
-			});
-		axios
-			.get("http://localhost:4000/alumnilinkedin?page=1&limit=40", {
-				headers: {
-					authorization: "bearer " + localStorage.getItem("token"),
-				},
-			})
-			.then((res2) => {
-				setAlumniLinkedin(res2.data.data);
-				setAlumniLinkedinPage(res2.data.pages);
-			})
-			.catch((err) => {
-				alert("gagal mengambil data alumni linkedin!");
-				console.log(err);
-			});
-	}, []);
+	if (loading) return <h1>loading...</h1>;
+	if (error) return <p>{"Error getting Data: " + error.message}</p>;
 
 	return (
 		<>
 			<h1>Data Input Manual</h1>
-			<Grid columns={4} stackable>
-				{alumnis.map((alumni, index) => (
+			{/* <Grid columns={4} stackable>
+				{data.alumnis.map((alumni, index) => (
 					<Grid.Column key={alumni._id}>
 						<AlumniCard alumni={alumni} />
 					</Grid.Column>
 				))}
-			</Grid>
+			</Grid> */}
 			<br />
 			<br />
 			<br />
@@ -133,28 +80,35 @@ const ListAlumni: React.FunctionComponent<{}> = () => {
 						</Button>
 					</Grid.Column>
 				</Grid.Row>
-				{alumniLinkedin.map((alumni, index) => (
-					<Grid.Column key={alumni._id}>
-						<AlumniCard alumni={alumni} />
-					</Grid.Column>
-				))}
+				{data.queryLinkedin.alumniLinkedin.map(
+					(alumni: alumniListInterface, index: number) => (
+						<Grid.Column key={alumni._id}>
+							<AlumniCard alumni={alumni} />
+						</Grid.Column>
+					)
+				)}
 				<Grid.Row>
 					<Grid.Column width={16} textAlign="center">
-						{alumniLinkedinPage.map((page, index) =>
-							page.number === currentPageLinkedin ? (
-								<Label color="grey" size="large">
-									{page.number}
-								</Label>
-							) : (
+						{data.queryLinkedin.linkedinPage.pages.map(
+							(page: page, index: number) => (
+								// page.number === currentPageLinkedin ? (
+								// 	<Label color="grey" size="large">
+								// 		{page.number}
+								// 	</Label>
+								// ) : (
 								<Button
 									color="instagram"
-									onClick={() =>
-										handlePageClick(page.number, page.url)
-									}
+									onClick={() => {
+										alert(
+											` ${page.page} will skip ${page.skip} `
+										);
+										console.log(getLinkedinAndPagination);
+									}}
 								>
-									{page.number}
+									{page.page}
 								</Button>
 							)
+							// )
 						)}
 					</Grid.Column>
 				</Grid.Row>
