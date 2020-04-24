@@ -1,15 +1,31 @@
 import React, { useContext } from "react";
-import { Segment, Card, Button } from "semantic-ui-react";
+import { Segment, Card, Button, Label } from "semantic-ui-react";
 import { useFormik } from "formik";
 import CustomInputForm from "components/CustomInputForm";
 import LoginSchema from "./loginValidation";
 import axios from "axios";
 import { TokenContext } from "contexts/tokenContext";
 import { useHistory } from "react-router";
+import { useMutation } from "@apollo/react-hooks";
+import { gql } from "apollo-boost";
 
 const Login: React.FunctionComponent = () => {
 	const history = useHistory();
 	const { dispatch } = useContext(TokenContext);
+	const M_LOGIN = gql`
+		mutation login($id: String!, $password: String!) {
+			login(email: $id, password: $password) {
+				token
+			}
+		}
+	`;
+	const [login, { data, loading, error }] = useMutation(M_LOGIN, {
+		onCompleted: (data) => {
+			localStorage.setItem("token", data.login.token);
+			history.push("/listAlumni");
+		},
+		onError: (error) => {},
+	});
 	const formik = useFormik({
 		initialValues: {
 			name: "",
@@ -17,18 +33,13 @@ const Login: React.FunctionComponent = () => {
 			password: "",
 		},
 		validationSchema: LoginSchema,
-		onSubmit: (values) => {
-			axios
-				.post("http://localhost:4000/user/login", values)
-				.then((res) => {
-					alert("login berhasil!");
-					dispatch({ type: "SAVE_TOKEN", token: res.data.token });
-					history.push("/listAlumni");
-					// dispatch({ type: "REMOVE_TOKEN", token: "" });
-				})
-				.catch((err) => {
-					alert(`gagal login: ${err.response.data.error}`);
-				});
+		onSubmit: async (values) => {
+			login({
+				variables: {
+					id: values.email,
+					password: values.password,
+				},
+			});
 		},
 	});
 	return (
@@ -36,6 +47,12 @@ const Login: React.FunctionComponent = () => {
 			<Card centered>
 				<Segment basic>
 					<h1>LOGIN</h1>
+
+					{loading && (
+						<Label color="green">Mendapatkan Token...</Label>
+					)}
+					{error && <Label color="red">{error.message}</Label>}
+					<br />
 					<CustomInputForm
 						label="Email"
 						name="email"
