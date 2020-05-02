@@ -17,19 +17,9 @@ interface alumniListInterface {
 	data_source: string;
 }
 
-interface token {
-	name: string;
-	level: number;
-}
-
-const ListAlumni: React.FunctionComponent<{}> = () => {
-	const { token } = useContext(TokenContext);
-	const decoded: token = jwtDecoder(token);
-	const [currentPageL, setCurrentPageL] = useState(1);
-	const [currentPage, setCurrentPage] = useState(1);
-	const Q_ALUMNI_WITH_PAGINATION = gql`
-	{
-		alumniWithPagination(page: ${currentPage}, limit: 1) {
+const Q_ALUMNI_WITH_PAGINATION = gql`
+	query alumniWithPagination($page: Int!) {
+		alumniWithPagination(page: $page, limit: 2) {
 			alumni {
 				_id
 				name
@@ -48,11 +38,10 @@ const ListAlumni: React.FunctionComponent<{}> = () => {
 			totalData
 		}
 	}
-	`;
-	const Q_LINKEDIN_WITH_PAGINATION = gql`
-
-	{
-		linkedinWithPagination(page: ${currentPageL}, limit: 40) {
+`;
+const Q_LINKEDIN_WITH_PAGINATION = gql`
+	query linkedinWithPagination($page: Int!) {
+		linkedinWithPagination(page: $page, limit: 40) {
 			alumniLinkedin {
 				_id
 				name
@@ -73,16 +62,27 @@ const ListAlumni: React.FunctionComponent<{}> = () => {
 	}
 `;
 
+const ListAlumni: React.FunctionComponent<{}> = () => {
+	const { token } = useContext(TokenContext);
+	const [currentPageL, setCurrentPageL] = useState(1);
+	const [currentPage, setCurrentPage] = useState(1);
 	const { loading, data, error } = useQuery(Q_ALUMNI_WITH_PAGINATION, {
+		variables: {
+			page: currentPage,
+		},
 		context: {
 			headers: {
 				authorization: `bearer ${token}`,
 			},
 		},
+		fetchPolicy: "cache-and-network",
 	});
 	const { loading: loadingL, data: dataL, error: errorL } = useQuery(
 		Q_LINKEDIN_WITH_PAGINATION,
 		{
+			variables: {
+				page: currentPageL,
+			},
 			context: {
 				headers: {
 					authorization: `bearer ${token}`,
@@ -120,10 +120,7 @@ const ListAlumni: React.FunctionComponent<{}> = () => {
 					{data.alumniWithPagination.alumni.map(
 						(alumni: alumniListInterface, index: number) => (
 							<Grid.Column key={alumni._id}>
-								<AlumniCard
-									alumni={alumni}
-									level={decoded.level}
-								/>
+								<AlumniCard alumni={alumni} token={token} />
 							</Grid.Column>
 						)
 					)}
@@ -167,10 +164,7 @@ const ListAlumni: React.FunctionComponent<{}> = () => {
 					{dataL.linkedinWithPagination.alumniLinkedin.map(
 						(alumni: alumniListInterface, index: number) => (
 							<Grid.Column key={alumni._id}>
-								<AlumniCard
-									alumni={alumni}
-									level={decoded.level}
-								/>
+								<AlumniCard alumni={alumni} token={token} />
 							</Grid.Column>
 						)
 					)}

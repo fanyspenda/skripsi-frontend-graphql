@@ -6,7 +6,7 @@ import CustomInputForm from "../../components/CustomInputForm";
 import CustomDropdownForm from "../../components/CustomDropdownForm";
 import alumniInterface from "../../interfaces/alumniInterface";
 import { useHistory } from "react-router";
-import alumniSchema from "./addAlumniValidation";
+import addAlumniValidationSchema from "./addAlumniValidation";
 import { gql } from "apollo-boost";
 import { useQuery, useMutation } from "react-apollo";
 import { TokenContext } from "contexts/tokenContext";
@@ -19,7 +19,7 @@ interface major {
 	value: string;
 }
 
-const alumni: inputAlumni = {
+const initialValueAlumni: inputAlumni = {
 	name: "",
 	entry_year: 1986,
 	graduate_year: new Date().getFullYear(),
@@ -103,7 +103,7 @@ const AddAlumni: React.FunctionComponent = () => {
 	});
 	const history = useHistory();
 	const formik = useFormik({
-		initialValues: alumni,
+		initialValues: initialValueAlumni,
 		onSubmit: async (values) => {
 			await addAlumni({
 				variables: {
@@ -123,6 +123,7 @@ const AddAlumni: React.FunctionComponent = () => {
 				},
 			});
 		},
+		validationSchema: addAlumniValidationSchema,
 	});
 
 	if (loading) return <h1>loading...</h1>;
