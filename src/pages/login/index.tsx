@@ -5,7 +5,7 @@ import CustomInputForm from "components/CustomInputForm";
 import LoginSchema from "./loginValidation";
 import axios from "axios";
 import { TokenContext } from "contexts/tokenContext";
-import { useHistory } from "react-router";
+import { useHistory, Redirect } from "react-router";
 import { useMutation } from "@apollo/react-hooks";
 import { gql } from "apollo-boost";
 
@@ -13,8 +13,8 @@ const Login: React.FunctionComponent = () => {
 	const history = useHistory();
 	const { dispatch } = useContext(TokenContext);
 	const M_LOGIN = gql`
-		mutation login($id: String!, $password: String!) {
-			login(email: $id, password: $password) {
+		mutation login($email: String!, $password: String!) {
+			login(email: $email, password: $password) {
 				token
 			}
 		}
@@ -40,7 +40,7 @@ const Login: React.FunctionComponent = () => {
 		onSubmit: async (values) => {
 			await login({
 				variables: {
-					id: values.email,
+					email: values.email,
 					password: values.password,
 				},
 			});
@@ -48,6 +48,9 @@ const Login: React.FunctionComponent = () => {
 	});
 	return (
 		<form onSubmit={formik.handleSubmit}>
+			<TokenContext.Consumer>
+				{(values) => (values.token ? <Redirect to="/" /> : null)}
+			</TokenContext.Consumer>
 			<Card centered>
 				<Segment basic>
 					<h1>LOGIN</h1>

@@ -1,15 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useFormik } from "formik";
-import { Segment, Button } from "semantic-ui-react";
+import { Segment, Button, Label } from "semantic-ui-react";
 import axios from "axios";
 import CustomInputForm from "../../components/CustomInputForm";
 import CustomDropdownForm from "../../components/CustomDropdownForm";
 import alumniInterface from "../../interfaces/alumniInterface";
 import { useHistory } from "react-router";
-import majors from "./majorGetter";
 import alumniSchema from "./addAlumniValidation";
+import { gql } from "apollo-boost";
+import { useQuery, useMutation } from "react-apollo";
+import { TokenContext } from "contexts/tokenContext";
 interface inputAlumni extends alumniInterface {
 	data_source: string;
+}
+
+interface major {
+	text: string;
+	value: string;
 }
 
 const alumni: inputAlumni = {
@@ -23,27 +30,106 @@ const alumni: inputAlumni = {
 	data_source: "manual",
 };
 
+const Q_GET_MAJORS = gql`
+	query majorWithPagination {
+		majorWithPagination {
+			majors {
+				name
+			}
+		}
+	}
+`;
+
+const M_ADD_ALUMNI = gql`
+	mutation addAlumni(
+		$name: String!
+		$entry_year: Int!
+		$graduate_year: Int!
+		$major: String!
+		$work_at: String!
+		$work_position: String!
+		$email: String!
+		$data_source: String!
+	) {
+		addAlumni(
+			data: {
+				name: $name
+				entry_year: $entry_year
+				graduate_year: $graduate_year
+				major: $major
+				work_at: $work_at
+				work_position: $work_position
+				email: $email
+				data_source: $data_source
+			}
+		) {
+			_id
+		}
+	}
+`;
+
 const AddAlumni: React.FunctionComponent = () => {
-	const [isDisabled, setIsDisabled] = useState(false);
+	const { token } = useContext(TokenContext);
+	const [majors, setMajors] = useState<major[]>([{ text: "", value: "" }]);
+	const { loading, error } = useQuery(Q_GET_MAJORS, {
+		context: {
+			headers: {
+				authorization: `bearer ${token}`,
+			},
+		},
+		onCompleted: (data) => {
+			let majorData: major[] = [];
+			data.majorWithPagination.majors.map(
+				(major: { name: string }, index: number) => {
+					const newMajor = {
+						text: major.name,
+						value: major.name,
+					};
+					majorData.push(newMajor);
+				}
+			);
+			setMajors(majorData);
+		},
+		onError: (error) => {},
+	});
+
+	const [
+		addAlumni,
+		{ loading: submitLoading, error: submitError },
+	] = useMutation(M_ADD_ALUMNI, {
+		onCompleted: () => {
+			history.push("/listAlumni");
+		},
+	});
 	const history = useHistory();
 	const formik = useFormik({
 		initialValues: alumni,
-		onSubmit: (values) => {
-			setIsDisabled(true);
-			axios
-				.post("http://localhost:4000/alumni", values)
-				.then((res) => {
-					alert("Berhasil menyimpan data! \n" + res.data);
-					history.push("/listAlumni");
-				})
-				.catch((err) => alert(`Error inputing data: ${err}`))
-				.finally(() => {
-					setIsDisabled(false);
-				});
+		onSubmit: async (values) => {
+			await addAlumni({
+				variables: {
+					name: values.name,
+					entry_year: values.entry_year,
+					graduate_year: values.graduate_year,
+					major: values.major,
+					work_at: values.work_at,
+					work_position: values.work_position,
+					email: values.email,
+					data_source: values.data_source,
+				},
+				context: {
+					headers: {
+						authorization: `bearer ${token}`,
+					},
+				},
+			});
 		},
-		validationSchema: alumniSchema,
 	});
 
+	if (loading) return <h1>loading...</h1>;
+	if (error || submitError)
+		return (
+			<Label color="red">{error?.message || submitError?.message}</Label>
+		);
 	return (
 		<Segment basic>
 			<h1>Tambah data Alumni</h1>
@@ -72,6 +158,7 @@ const AddAlumni: React.FunctionComponent = () => {
 					touched={formik.touched.graduate_year}
 					error={formik.errors.graduate_year}
 				/>
+
 				<CustomDropdownForm
 					label="Jurusan"
 					placeholder="Pilih Jurusan"
@@ -110,7 +197,7 @@ const AddAlumni: React.FunctionComponent = () => {
 				/>
 				<br />
 				<Segment textAlign="right" basic>
-					<Button type="submit" color="blue" disabled={isDisabled}>
+					<Button type="submit" color="blue" disabled={submitLoading}>
 						Simpan Data Alumni
 					</Button>
 					<Button>Batal</Button>
