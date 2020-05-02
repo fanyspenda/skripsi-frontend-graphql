@@ -11,10 +11,12 @@ interface alumniCardProps
 
 interface alumniData {
 	alumni: alumniCardProps;
+	level: number;
 }
 
-const AlumniCard: React.FunctionComponent<alumniData> = ({ alumni }) => {
+const AlumniCard: React.FunctionComponent<alumniData> = ({ alumni, level }) => {
 	const history = useHistory();
+
 	const handleCardClick = (_id: string, data_source: string) => {
 		const data = {
 			_id,
@@ -41,7 +43,7 @@ const AlumniCard: React.FunctionComponent<alumniData> = ({ alumni }) => {
 				<Card.Description>{`${alumni.email}`}</Card.Description>
 			</Card.Content>
 			<Card.Content extra>
-				{alumni.data_source == "manual" ? (
+				{alumni.data_source == "manual" && level == 0 ? (
 					<EditDeleteButton
 						onEditClick={() => handleEditClick(alumni._id)}
 						onDeleteClick={() => handleDeleteClick(alumni._id)}

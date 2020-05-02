@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
-import { Card, Grid, Button, Label, Segment, Header } from "semantic-ui-react";
+import React, { useState, useContext } from "react";
+import { Grid, Button, Label, Segment, Header } from "semantic-ui-react";
 import { gql } from "apollo-boost";
 import axios from "axios";
 import AlumniCard from "./alumniCard";
-import { page } from "interfaces/pageInterface";
-import { useQuery, useLazyQuery } from "@apollo/react-hooks";
+import { useQuery } from "@apollo/react-hooks";
+import { TokenContext } from "contexts/tokenContext";
+import jwtDecoder from "jwt-decode";
+import CustomPagination from "components/CustomPagination";
 
 interface alumniListInterface {
 	_id: string;
@@ -15,7 +17,14 @@ interface alumniListInterface {
 	data_source: string;
 }
 
+interface token {
+	name: string;
+	level: number;
+}
+
 const ListAlumni: React.FunctionComponent<{}> = () => {
+	const { token } = useContext(TokenContext);
+	const decoded: token = jwtDecoder(token);
 	const [currentPageL, setCurrentPageL] = useState(1);
 	const [currentPage, setCurrentPage] = useState(1);
 	const Q_ALUMNI_WITH_PAGINATION = gql`
@@ -64,20 +73,29 @@ const ListAlumni: React.FunctionComponent<{}> = () => {
 	}
 `;
 
-	const { loading, data, error } = useQuery(Q_ALUMNI_WITH_PAGINATION);
+	const { loading, data, error } = useQuery(Q_ALUMNI_WITH_PAGINATION, {
+		context: {
+			headers: {
+				authorization: `bearer ${token}`,
+			},
+		},
+	});
 	const { loading: loadingL, data: dataL, error: errorL } = useQuery(
-		Q_LINKEDIN_WITH_PAGINATION
+		Q_LINKEDIN_WITH_PAGINATION,
+		{
+			context: {
+				headers: {
+					authorization: `bearer ${token}`,
+				},
+			},
+		}
 	);
 
 	if (loading || loadingL)
 		return <h1 style={{ textAlign: "center" }}>loading...</h1>;
-	// const [
-	// 	getLinkedin,
-	// 	{ loading: loadingL, data: dataL, error: errorL },
-	// ] = useLazyQuery(Q_LINKEDIN_WITH_PAGINATION);
-	// const [getAlumni, { loading, data, error }] = useLazyQuery(
-	// 	Q_ALUMNI_WITH_PAGINATION
-	// );
+
+	if (error || errorL)
+		return <Label color="red">{error?.message || errorL?.message}</Label>;
 	const handleLinkedinScrap = () => {
 		axios
 			.get("http://localhost:5000/scraper")
@@ -102,31 +120,26 @@ const ListAlumni: React.FunctionComponent<{}> = () => {
 					{data.alumniWithPagination.alumni.map(
 						(alumni: alumniListInterface, index: number) => (
 							<Grid.Column key={alumni._id}>
-								<AlumniCard alumni={alumni} />
+								<AlumniCard
+									alumni={alumni}
+									level={decoded.level}
+								/>
 							</Grid.Column>
 						)
 					)}
-
 					<Grid.Row>
 						<Grid.Column width={16} textAlign="center">
-							{data.alumniWithPagination.alumniPage.pages.map(
-								(page: page, index: number) =>
-									page.page === currentPage ? (
-										<Label color="grey" size="large">
-											{page.page}
-										</Label>
-									) : (
-										<Button
-											color="teal"
-											onClick={() =>
-												setCurrentPage(page.page)
-											}
-										>
-											{page.page}
-										</Button>
-									)
-							)}
-							<Header as="h5">{`total page: ${data.alumniWithPagination.alumniPage.totalPage}`}</Header>
+							<CustomPagination
+								currentPage={currentPage}
+								totalPage={
+									data.alumniWithPagination.alumniPage
+										.totalPage
+								}
+								setCurrentPage={setCurrentPage}
+								data={
+									data.alumniWithPagination.alumniPage.pages
+								}
+							/>
 						</Grid.Column>
 					</Grid.Row>
 				</Grid>
@@ -154,31 +167,28 @@ const ListAlumni: React.FunctionComponent<{}> = () => {
 					{dataL.linkedinWithPagination.alumniLinkedin.map(
 						(alumni: alumniListInterface, index: number) => (
 							<Grid.Column key={alumni._id}>
-								<AlumniCard alumni={alumni} />
+								<AlumniCard
+									alumni={alumni}
+									level={decoded.level}
+								/>
 							</Grid.Column>
 						)
 					)}
 
 					<Grid.Row>
 						<Grid.Column width={16} textAlign="center">
-							{dataL.linkedinWithPagination.linkedinPage.pages.map(
-								(page: page, index: number) =>
-									page.page === currentPageL ? (
-										<Label color="grey" size="large">
-											{page.page}
-										</Label>
-									) : (
-										<Button
-											color="teal"
-											onClick={() =>
-												setCurrentPageL(page.page)
-											}
-										>
-											{page.page}
-										</Button>
-									)
-							)}
-							<Header as="h5">{`total page ${dataL.linkedinWithPagination.linkedinPage.totalPage}`}</Header>
+							<CustomPagination
+								currentPage={currentPageL}
+								setCurrentPage={setCurrentPageL}
+								totalPage={
+									dataL.linkedinWithPagination.linkedinPage
+										.totalPage
+								}
+								data={
+									dataL.linkedinWithPagination.linkedinPage
+										.pages
+								}
+							/>
 						</Grid.Column>
 					</Grid.Row>
 				</Grid>

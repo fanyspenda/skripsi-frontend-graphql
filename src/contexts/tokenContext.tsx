@@ -16,7 +16,7 @@ const TokenContextProvider: React.SFC<TokenContextProviderProps> = ({
 	children,
 }) => {
 	//initial value dioverride di sini ketika jalan pertama kali
-	const [token, dispatch] = useReducer(TokenReducer, "halo", (): string => {
+	const [token, dispatch] = useReducer(TokenReducer, "", (): string => {
 		const savedToken = localStorage.getItem("token");
 		return savedToken || "";
 	});

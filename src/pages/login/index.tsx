@@ -22,6 +22,10 @@ const Login: React.FunctionComponent = () => {
 	const [login, { data, loading, error }] = useMutation(M_LOGIN, {
 		onCompleted: (data) => {
 			localStorage.setItem("token", data.login.token);
+			dispatch({
+				token: data.login.token,
+				type: "SAVE_TOKEN",
+			});
 			history.push("/listAlumni");
 		},
 		onError: (error) => {},
@@ -34,7 +38,7 @@ const Login: React.FunctionComponent = () => {
 		},
 		validationSchema: LoginSchema,
 		onSubmit: async (values) => {
-			login({
+			await login({
 				variables: {
 					id: values.email,
 					password: values.password,
