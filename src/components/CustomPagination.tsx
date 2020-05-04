@@ -5,15 +5,13 @@ import { page } from "interfaces/pageInterface";
 export interface CustomPaginationProps {
 	data: any[];
 	currentPage: number;
-	totalPage: number;
-	setCurrentPage: (page: number) => void;
+	handlePageClick: (page: number) => void;
 }
 
 const CustomPagination: React.FunctionComponent<CustomPaginationProps> = ({
 	data,
 	currentPage,
-	setCurrentPage,
-	totalPage,
+	handlePageClick,
 }) => {
 	return (
 		<>
@@ -28,13 +26,12 @@ const CustomPagination: React.FunctionComponent<CustomPaginationProps> = ({
 					return (
 						<Button
 							color="teal"
-							onClick={() => setCurrentPage(page.page)}
+							onClick={() => handlePageClick(page.page)}
 						>
 							{page.page}
 						</Button>
 					);
 			})}
-			<Header as="h5">{`total page: ${totalPage}`}</Header>
 		</>
 	);
 };
