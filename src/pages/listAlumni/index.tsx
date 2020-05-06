@@ -8,6 +8,8 @@ import { TokenContext } from "contexts/tokenContext";
 import jwtDecoder from "jwt-decode";
 import CustomPagination from "components/CustomPagination";
 import { number } from "yup";
+import AlumniList from "./alumniList";
+import RedirectToLogin from "components/RedirectToLogin";
 
 interface alumniListInterface {
 	_id: string;
@@ -102,7 +104,8 @@ const Q_ALL_ALUMNI_WITH_PAGINATION = gql`
 		}
 	}
 `;
-const ListAlumni: React.FunctionComponent<{}> = () => {
+const AlumniPage: React.FunctionComponent<{}> = () => {
+	const { token } = useContext(TokenContext);
 	const [alumniL, setAlumniL] = useState<alumniListInterface[]>([
 		{
 			_id: "",
@@ -143,7 +146,6 @@ const ListAlumni: React.FunctionComponent<{}> = () => {
 			},
 		],
 	});
-	const { token } = useContext(TokenContext);
 	const [currentPageL, setCurrentPageL] = useState(1);
 	const [currentPage, setCurrentPage] = useState(1);
 	const { loading, error } = useQuery(Q_ALL_ALUMNI_WITH_PAGINATION, {
@@ -210,40 +212,25 @@ const ListAlumni: React.FunctionComponent<{}> = () => {
 	};
 
 	if (loading) return <h1 style={{ textAlign: "center" }}>loading...</h1>;
-	if (error) return <Label color="red">{error?.message}</Label>;
+	if (error) return <RedirectToLogin />;
 
 	return (
 		<>
 			<Segment basic disabled={loadingA}>
 				<h1>Data Input Manual</h1>
 				<Grid columns={4} stackable>
-					<Grid.Row>
-						<Grid.Column>
-							<Label color="olive">{`jumlah alumni: ${totalData}`}</Label>
-							<Label color="olive">{`jumlah halaman: ${pagination.totalPage}`}</Label>
-							{errorA && (
-								<Label color="red">{errorA.message}</Label>
-							)}
-						</Grid.Column>
-					</Grid.Row>
-					{alumni.map(
-						(alumni: alumniListInterface, index: number) => (
-							<Grid.Column key={alumni._id}>
-								<AlumniCard alumni={alumni} token={token} />
-							</Grid.Column>
-						)
-					)}
-					<Grid.Row>
-						<Grid.Column width={16} textAlign="center">
-							<CustomPagination
-								currentPage={currentPage}
-								handlePageClick={onPageClick}
-								data={pagination.pages}
-							/>
-						</Grid.Column>
-					</Grid.Row>
+					<AlumniList
+						alumni={alumni}
+						currentPage={currentPage}
+						onPageClick={onPageClick}
+						pages={pagination.pages}
+						totalPage={pagination.totalPage}
+						totalData={totalData}
+					/>
+					{errorA && <Label color="red">{errorA.message}</Label>}
 				</Grid>
 			</Segment>
+
 			<Segment basic disabled={loadingL}>
 				<Grid columns={4} stackable>
 					<Grid.Row>
@@ -259,36 +246,19 @@ const ListAlumni: React.FunctionComponent<{}> = () => {
 							</Button>
 						</Grid.Column>
 					</Grid.Row>
-					<Grid.Row>
-						<Grid.Column>
-							<Label color="olive">{`Jumlah Alumni: ${totalDataL}`}</Label>
-							<Label color="olive">{`Jumlah halaman: ${paginationL.totalPage}`}</Label>
-							{errorL && (
-								<Label color="red">{errorL.message}</Label>
-							)}
-						</Grid.Column>
-					</Grid.Row>
-					{alumniL.map(
-						(alumni: alumniListInterface, index: number) => (
-							<Grid.Column key={alumni._id}>
-								<AlumniCard alumni={alumni} token={token} />
-							</Grid.Column>
-						)
-					)}
-
-					<Grid.Row>
-						<Grid.Column width={16} textAlign="center">
-							<CustomPagination
-								currentPage={currentPageL}
-								handlePageClick={onPageClickL}
-								data={paginationL.pages}
-							/>
-						</Grid.Column>
-					</Grid.Row>
+					<AlumniList
+						alumni={alumniL}
+						currentPage={currentPageL}
+						onPageClick={onPageClickL}
+						pages={paginationL.pages}
+						totalData={totalDataL}
+						totalPage={paginationL.totalPage}
+					/>
+					{errorL && <Label color="red">{errorL.message}</Label>}
 				</Grid>
 			</Segment>
 		</>
 	);
 };
 
-export default ListAlumni;
+export default AlumniPage;

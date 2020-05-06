@@ -6,6 +6,7 @@ import EditDeleteButton from "components/EditDeleteButton";
 import { gql } from "apollo-boost";
 import { useMutation } from "react-apollo";
 import jwtDecoder from "jwt-decode";
+import { decodedToken } from "interfaces/tokenInterface";
 
 interface alumniCardProps
 	extends Omit<alumniInterface, "entry_year" | "graduate_year" | "major"> {
@@ -17,10 +18,6 @@ interface alumniData {
 	token: string;
 }
 
-interface token {
-	name: string;
-	level: number;
-}
 const M_DELETE_ALUMNI = gql`
 	mutation deleteAlumni($id: String!) {
 		deleteAlumni(id: $id) {
@@ -31,7 +28,7 @@ const M_DELETE_ALUMNI = gql`
 
 const AlumniCard: React.FunctionComponent<alumniData> = ({ alumni, token }) => {
 	const history = useHistory();
-	const decoded: token = jwtDecoder(token);
+	const decoded: decodedToken = jwtDecoder(token);
 	const [
 		deleteAlumni,
 		{ loading: deleteLoading, error: deleteError },

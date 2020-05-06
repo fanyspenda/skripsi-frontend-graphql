@@ -117,7 +117,7 @@ const EditAlumni: React.FunctionComponent = () => {
 				headers: { authorization: `bearer ${token}` },
 			},
 			onCompleted: () => {
-				history.push("/listAlumni");
+				history.push("/alumni");
 			},
 		}
 	);

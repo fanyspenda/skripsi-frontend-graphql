@@ -71,6 +71,25 @@ const M_ADD_ALUMNI = gql`
 const AddAlumni: React.FunctionComponent = () => {
 	const { token } = useContext(TokenContext);
 	const [majors, setMajors] = useState<major[]>([{ text: "", value: "" }]);
+	const history = useHistory();
+	const formik = useFormik({
+		initialValues: initialValueAlumni,
+		onSubmit: async (values) => {
+			await addAlumni({
+				variables: {
+					name: values.name,
+					entry_year: values.entry_year,
+					graduate_year: values.graduate_year,
+					major: values.major,
+					work_at: values.work_at,
+					work_position: values.work_position,
+					email: values.email,
+					data_source: values.data_source,
+				},
+			});
+		},
+		validationSchema: addAlumniValidationSchema,
+	});
 	const { loading, error } = useQuery(Q_GET_MAJORS, {
 		context: {
 			headers: {
@@ -98,32 +117,13 @@ const AddAlumni: React.FunctionComponent = () => {
 		{ loading: submitLoading, error: submitError },
 	] = useMutation(M_ADD_ALUMNI, {
 		onCompleted: () => {
-			history.push("/listAlumni");
+			history.push("/alumni");
 		},
-	});
-	const history = useHistory();
-	const formik = useFormik({
-		initialValues: initialValueAlumni,
-		onSubmit: async (values) => {
-			await addAlumni({
-				variables: {
-					name: values.name,
-					entry_year: values.entry_year,
-					graduate_year: values.graduate_year,
-					major: values.major,
-					work_at: values.work_at,
-					work_position: values.work_position,
-					email: values.email,
-					data_source: values.data_source,
-				},
-				context: {
-					headers: {
-						authorization: `bearer ${token}`,
-					},
-				},
-			});
+		context: {
+			headers: {
+				authorization: `bearer ${token}`,
+			},
 		},
-		validationSchema: addAlumniValidationSchema,
 	});
 
 	if (loading) return <h1>loading...</h1>;

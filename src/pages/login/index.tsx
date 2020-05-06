@@ -26,7 +26,7 @@ const Login: React.FunctionComponent = () => {
 				token: data.login.token,
 				type: "SAVE_TOKEN",
 			});
-			history.push("/listAlumni");
+			history.push("/alumni");
 		},
 		onError: (error) => {},
 	});

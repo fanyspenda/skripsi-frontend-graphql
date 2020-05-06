@@ -1,28 +1,27 @@
 import React from "react";
-import { Router, Link, Route, Redirect, Switch } from "react-router-dom";
-import { createBrowserHistory } from "history";
-import { TokenContext } from "contexts/tokenContext";
+import { Route } from "react-router-dom";
 import AddAlumni from "pages/addAlumni";
-import ListAlumni from "pages/listAlumni";
 import DetailAlumni from "pages/detailAlumni";
 import EditAlumni from "pages/editAlumni";
 import Register from "pages/register";
 import Login from "pages/login";
 import Dashboard from "pages/dashboard";
+import AlumniPage from "pages/listAlumni";
+import MajorPage from "pages/listMajors";
 
 export interface RoutesProps {}
 
 const PageRouter: React.SFC<RoutesProps> = () => {
-	// const history = createBrowserHistory();
 	return (
 		<>
 			<Route exact path="/" component={Dashboard} />
 			<Route exact path="/addAlumni" component={AddAlumni} />
-			<Route exact path="/listAlumni" component={ListAlumni} />
+			<Route exact path="/alumni" component={AlumniPage} />
 			<Route exact path="/detailAlumni" component={DetailAlumni} />
 			<Route exact path="/editAlumni" component={EditAlumni} />
 			<Route exact path="/register" component={Register} />
 			<Route exact path="/login" component={Login} />
+			<Route exact path="/majors" component={MajorPage} />
 		</>
 	);
 };
