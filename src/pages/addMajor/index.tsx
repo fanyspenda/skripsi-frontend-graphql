@@ -6,6 +6,7 @@ import { Segment, Form, Label, Button } from "semantic-ui-react";
 import CustomInputForm from "components/CustomInputForm";
 import { addMajorValidationScehma } from "./addMajorValidation";
 import { TokenContext } from "contexts/tokenContext";
+import { useHistory } from "react-router-dom";
 
 const initialValues = {
 	degree: "",
@@ -21,12 +22,16 @@ const M_ADD_MAJOR = gql`
 `;
 
 const AddMajor: React.FunctionComponent = () => {
+	const history = useHistory();
 	const { token } = useContext(TokenContext);
 	const [addMajor, { loading, error }] = useMutation(M_ADD_MAJOR, {
 		context: {
 			headers: {
 				authorization: `bearer ${token}`,
 			},
+		},
+		onCompleted: () => {
+			history.push("/majors");
 		},
 	});
 	const formik = useFormik({

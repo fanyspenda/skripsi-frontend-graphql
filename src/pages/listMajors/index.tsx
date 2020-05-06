@@ -5,6 +5,7 @@ import { useQuery, useMutation } from "react-apollo";
 import { TokenContext } from "contexts/tokenContext";
 import { major } from "interfaces/majorInterface";
 import CustomPagination from "components/CustomPagination";
+import { useHistory, useLocation } from "react-router-dom";
 
 const Q_GET_MAJORS = gql`
 	query majorWithPagination($page: Int!) {
@@ -33,9 +34,12 @@ const M_DELETE_MAJOR = gql`
 	}
 `;
 
-const MajorPage: React.SFC = () => {
+const MajorPage: React.FunctionComponent = () => {
+	const location: any = useLocation();
+	const previousPage = (location.state?.page as number) || 1;
+	const history = useHistory();
 	const { token } = useContext(TokenContext);
-	const [currentPage, setCurrentPage] = useState(1);
+	const [currentPage, setCurrentPage] = useState(previousPage);
 	const { loading, data, error } = useQuery(Q_GET_MAJORS, {
 		context: {
 			headers: { authorization: `bearer ${token}` },
@@ -43,6 +47,7 @@ const MajorPage: React.SFC = () => {
 		variables: {
 			page: currentPage,
 		},
+		fetchPolicy: "cache-and-network",
 	});
 	const [deleteMajor, { loading: delLoading, error: delErr }] = useMutation(
 		M_DELETE_MAJOR,
@@ -51,6 +56,7 @@ const MajorPage: React.SFC = () => {
 				headers: { authorization: `bearer ${token}` },
 			},
 			onCompleted: () => {
+				history.replace("/majors", { page: currentPage });
 				window.location.reload(true);
 			},
 		}
@@ -87,7 +93,7 @@ const MajorPage: React.SFC = () => {
 				<Table.Body>
 					{data?.majorWithPagination.majors.map(
 						(major: major, index: number) => (
-							<Table.Row>
+							<Table.Row warning={delLoading}>
 								<Table.Cell width="11">{major.name}</Table.Cell>
 								<Table.Cell width="2">
 									<Button color="yellow" basic fluid>
