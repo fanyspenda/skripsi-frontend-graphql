@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { Segment, Grid, Table, Tab, Label, Button } from "semantic-ui-react";
 import { gql } from "apollo-boost";
-import { useQuery } from "react-apollo";
+import { useQuery, useMutation } from "react-apollo";
 import { TokenContext } from "contexts/tokenContext";
 import { major } from "interfaces/majorInterface";
 import CustomPagination from "components/CustomPagination";
@@ -25,6 +25,14 @@ const Q_GET_MAJORS = gql`
 	}
 `;
 
+const M_DELETE_MAJOR = gql`
+	mutation deleteMajor($id: String!) {
+		deleteMajor(id: $id) {
+			_id
+		}
+	}
+`;
+
 const MajorPage: React.SFC = () => {
 	const { token } = useContext(TokenContext);
 	const [currentPage, setCurrentPage] = useState(1);
@@ -36,6 +44,17 @@ const MajorPage: React.SFC = () => {
 			page: currentPage,
 		},
 	});
+	const [deleteMajor, { loading: delLoading, error: delErr }] = useMutation(
+		M_DELETE_MAJOR,
+		{
+			context: {
+				headers: { authorization: `bearer ${token}` },
+			},
+			onCompleted: () => {
+				window.location.reload(true);
+			},
+		}
+	);
 
 	if (loading) return <h1>Loading...</h1>;
 	if (error) return <Label color="red">{error.message}</Label>;
@@ -48,7 +67,7 @@ const MajorPage: React.SFC = () => {
 			<Label color="olive">
 				jumlah halaman: {data.majorWithPagination.majorPage.totalPage}
 			</Label>
-			<Table celled structured columns={3}>
+			<Table color="blue" structured columns={3} striped celled>
 				<Table.Header>
 					<Table.Row>
 						<Table.HeaderCell
@@ -62,9 +81,7 @@ const MajorPage: React.SFC = () => {
 							colSpan="2"
 							textAlign="center"
 							width="4"
-						>
-							<h4>Aksi</h4>
-						</Table.HeaderCell>
+						/>
 					</Table.Row>
 				</Table.Header>
 				<Table.Body>
@@ -78,7 +95,18 @@ const MajorPage: React.SFC = () => {
 									</Button>
 								</Table.Cell>
 								<Table.Cell width="2">
-									<Button color="red" basic fluid>
+									<Button
+										color="red"
+										basic
+										fluid
+										onClick={() =>
+											deleteMajor({
+												variables: {
+													id: major._id,
+												},
+											})
+										}
+									>
 										HAPUS
 									</Button>
 								</Table.Cell>
@@ -86,18 +114,14 @@ const MajorPage: React.SFC = () => {
 						)
 					)}
 				</Table.Body>
-				<Table.Footer>
-					<Table.Row>
-						<Table.Cell>
-							<CustomPagination
-								currentPage={currentPage}
-								handlePageClick={setCurrentPage}
-								data={data.majorWithPagination.majorPage.pages}
-							/>
-						</Table.Cell>
-					</Table.Row>
-				</Table.Footer>
 			</Table>
+			<Segment basic textAlign="center">
+				<CustomPagination
+					currentPage={currentPage}
+					handlePageClick={setCurrentPage}
+					data={data.majorWithPagination.majorPage.pages}
+				/>
+			</Segment>
 		</Segment>
 	);
 };
