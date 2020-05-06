@@ -18,7 +18,6 @@ const Q_GET_MAJORS = gql`
 				totalPage
 				pages {
 					page
-					skip
 				}
 			}
 			totalData
@@ -96,7 +95,17 @@ const MajorPage: React.FunctionComponent = () => {
 							<Table.Row warning={delLoading}>
 								<Table.Cell width="11">{major.name}</Table.Cell>
 								<Table.Cell width="2">
-									<Button color="yellow" basic fluid>
+									<Button
+										color="yellow"
+										basic
+										fluid
+										onClick={() =>
+											history.push(
+												"/editMajor",
+												major._id
+											)
+										}
+									>
 										EDIT
 									</Button>
 								</Table.Cell>
