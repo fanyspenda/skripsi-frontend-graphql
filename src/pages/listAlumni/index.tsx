@@ -1,13 +1,22 @@
 import React, { useState, useContext } from "react";
-import { Grid, Button, Label, Segment, Header } from "semantic-ui-react";
-import { gql } from "apollo-boost";
+import {
+	Grid,
+	Button,
+	Label,
+	Segment,
+	Divider,
+	Input,
+	Icon,
+	Form,
+} from "semantic-ui-react";
+import {
+	Q_ALL_ALUMNI_WITH_PAGINATION,
+	Q_ALUMNI_WITH_PAGINATION,
+	Q_LINKEDIN_WITH_PAGINATION,
+} from "./alumniQuery";
 import axios from "axios";
-import AlumniCard from "./alumniCard";
 import { useQuery, useLazyQuery } from "@apollo/react-hooks";
 import { TokenContext } from "contexts/tokenContext";
-import jwtDecoder from "jwt-decode";
-import CustomPagination from "components/CustomPagination";
-import { number } from "yup";
 import AlumniList from "./alumniList";
 import RedirectToLogin from "components/RedirectToLogin";
 
@@ -20,90 +29,6 @@ interface alumniListInterface {
 	data_source: string;
 }
 
-const Q_ALUMNI_WITH_PAGINATION = gql`
-	query alumniWithPagination($page: Int!) {
-		alumniWithPagination(page: $page, limit: 40) {
-			alumni {
-				_id
-				name
-				work_at
-				work_position
-				email
-				data_source
-			}
-			alumniPage {
-				totalPage
-				pages {
-					page
-					skip
-				}
-			}
-			totalData
-		}
-	}
-`;
-const Q_LINKEDIN_WITH_PAGINATION = gql`
-	query linkedinWithPagination($page: Int!) {
-		linkedinWithPagination(page: $page, limit: 40) {
-			alumniLinkedin {
-				_id
-				name
-				work_at
-				work_position
-				email
-				data_source
-			}
-			linkedinPage {
-				totalPage
-				pages {
-					page
-					skip
-				}
-			}
-			totalData
-		}
-	}
-`;
-const Q_ALL_ALUMNI_WITH_PAGINATION = gql`
-	query allAlumni {
-		alumniWithPagination(page: 1, limit: 40) {
-			alumni {
-				_id
-				name
-				work_at
-				work_position
-				email
-				data_source
-			}
-			alumniPage {
-				totalPage
-				pages {
-					page
-					skip
-				}
-			}
-			totalData
-		}
-		linkedinWithPagination(page: 1, limit: 40) {
-			alumniLinkedin {
-				_id
-				name
-				work_at
-				work_position
-				email
-				data_source
-			}
-			linkedinPage {
-				totalPage
-				pages {
-					page
-					skip
-				}
-			}
-			totalData
-		}
-	}
-`;
 const AlumniPage: React.FunctionComponent<{}> = () => {
 	const { token } = useContext(TokenContext);
 	const [alumniL, setAlumniL] = useState<alumniListInterface[]>([
@@ -216,6 +141,26 @@ const AlumniPage: React.FunctionComponent<{}> = () => {
 
 	return (
 		<>
+			<Segment basic>
+				<Form>
+					<Grid stackable textAlign="center">
+						<Grid.Row>
+							<Grid.Column width="10">
+								<Input
+									placeholder="cari alumni di sini..."
+									fluid
+								/>
+							</Grid.Column>
+							<Grid.Column width="2" textAlign="center">
+								<Button fluid color="green">
+									<Icon name="search" />
+									Cari
+								</Button>
+							</Grid.Column>
+						</Grid.Row>
+					</Grid>
+				</Form>
+			</Segment>
 			<Segment basic disabled={loadingA}>
 				<h1>Data Input Manual</h1>
 				<Grid columns={4} stackable>
@@ -230,6 +175,7 @@ const AlumniPage: React.FunctionComponent<{}> = () => {
 					{errorA && <Label color="red">{errorA.message}</Label>}
 				</Grid>
 			</Segment>
+			<Divider />
 
 			<Segment basic disabled={loadingL}>
 				<Grid columns={4} stackable>
@@ -240,7 +186,7 @@ const AlumniPage: React.FunctionComponent<{}> = () => {
 						<Grid.Column width={8} textAlign="right">
 							<Button
 								onClick={() => handleLinkedinScrap()}
-								color="green"
+								color="orange"
 							>
 								Scraping Ulang
 							</Button>
@@ -257,6 +203,7 @@ const AlumniPage: React.FunctionComponent<{}> = () => {
 					{errorL && <Label color="red">{errorL.message}</Label>}
 				</Grid>
 			</Segment>
+			<Divider />
 		</>
 	);
 };
