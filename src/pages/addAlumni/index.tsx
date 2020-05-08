@@ -201,7 +201,9 @@ const AddAlumni: React.FunctionComponent = () => {
 					<Button type="submit" color="blue" disabled={submitLoading}>
 						Simpan Data Alumni
 					</Button>
-					<Button>Batal</Button>
+					<Button onClick={() => history.push("/alumni")}>
+						Batal
+					</Button>
 				</Segment>
 			</form>
 		</Segment>

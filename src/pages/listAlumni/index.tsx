@@ -13,12 +13,14 @@ import {
 	Q_ALL_ALUMNI_WITH_PAGINATION,
 	Q_ALUMNI_WITH_PAGINATION,
 	Q_LINKEDIN_WITH_PAGINATION,
+	Q_SEARCH_ALUMNI_WITH_PAGINATION,
 } from "./alumniQuery";
 import axios from "axios";
 import { useQuery, useLazyQuery } from "@apollo/react-hooks";
 import { TokenContext } from "contexts/tokenContext";
 import AlumniList from "./alumniList";
 import RedirectToLogin from "components/RedirectToLogin";
+import { useFormik } from "formik";
 
 interface alumniListInterface {
 	_id: string;
@@ -31,6 +33,7 @@ interface alumniListInterface {
 
 const AlumniPage: React.FunctionComponent<{}> = () => {
 	const { token } = useContext(TokenContext);
+	const [search, setSearch] = useState("");
 	const [alumniL, setAlumniL] = useState<alumniListInterface[]>([
 		{
 			_id: "",
@@ -101,6 +104,7 @@ const AlumniPage: React.FunctionComponent<{}> = () => {
 				setAlumni(data.alumniWithPagination.alumni);
 				setPagination(data.alumniWithPagination.alumniPage);
 			},
+			fetchPolicy: "network-only",
 		}
 	);
 
@@ -114,16 +118,37 @@ const AlumniPage: React.FunctionComponent<{}> = () => {
 				setAlumniL(data.linkedinWithPagination.alumniLinkedin);
 				setPaginationL(data.linkedinWithPagination.linkedinPage);
 			},
+			fetchPolicy: "network-only",
+		}
+	);
+
+	const [searchAlumni, { loading: loadingS, error: errorS }] = useLazyQuery(
+		Q_SEARCH_ALUMNI_WITH_PAGINATION,
+		{
+			context: {
+				headers: { authorization: `bearer ${token}` },
+			},
+			fetchPolicy: "network-only",
+			onCompleted: (data) => {
+				setAlumniL(data.linkedinWithPagination.alumniLinkedin);
+				setTotalDataL(data.linkedinWithPagination.totalData);
+				setPaginationL(data.linkedinWithPagination.linkedinPage);
+				setAlumni(data.alumniWithPagination.alumni);
+				setTotalData(data.alumniWithPagination.totalData);
+				setPagination(data.alumniWithPagination.alumniPage);
+				setCurrentPage(1);
+				setCurrentPageL(1);
+			},
 		}
 	);
 
 	const onPageClick = (pageClicked: number) => {
 		setCurrentPage(pageClicked);
-		getAlumni({ variables: { page: 3 } });
+		getAlumni({ variables: { page: pageClicked, name: search } });
 	};
 	const onPageClickL = (pageClicked: number) => {
 		setCurrentPageL(pageClicked);
-		getAlumniL({ variables: { page: pageClicked } });
+		getAlumniL({ variables: { page: pageClicked, name: search } });
 	};
 	const handleLinkedinScrap = () => {
 		axios
@@ -136,23 +161,39 @@ const AlumniPage: React.FunctionComponent<{}> = () => {
 			});
 	};
 
+	const formik = useFormik({
+		initialValues: { search: "" },
+		onSubmit: (values) => {
+			setSearch(values.search);
+			searchAlumni({
+				variables: {
+					page: 1,
+					name: values.search,
+				},
+			});
+		},
+	});
+
 	if (loading) return <h1 style={{ textAlign: "center" }}>loading...</h1>;
 	if (error) return <RedirectToLogin />;
 
 	return (
 		<>
 			<Segment basic>
-				<Form>
+				<Form onSubmit={formik.handleSubmit}>
 					<Grid stackable textAlign="center">
 						<Grid.Row>
 							<Grid.Column width="10">
 								<Input
+									name="search"
+									onChange={formik.handleChange}
+									values={formik.values.search}
 									placeholder="cari alumni di sini..."
 									fluid
 								/>
 							</Grid.Column>
 							<Grid.Column width="2" textAlign="center">
-								<Button fluid color="green">
+								<Button fluid color="green" type="submit">
 									<Icon name="search" />
 									Cari
 								</Button>
