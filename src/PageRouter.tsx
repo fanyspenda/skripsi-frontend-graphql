@@ -13,6 +13,7 @@ import EditMajor from "pages/editMajor";
 import UserPage from "pages/listUser";
 import EditUser from "pages/editUser";
 import EditUserPass from "pages/editUserPass";
+import AddUser from "pages/addUser";
 
 const PageRouter: React.FunctionComponent = () => {
 	return (
@@ -22,6 +23,7 @@ const PageRouter: React.FunctionComponent = () => {
 			<Route exact path="/users" component={UserPage} />
 			<Route exact path="/editUser" component={EditUser} />
 			<Route exact path="/editUserPass" component={EditUserPass} />
+			<Route exact path="/addUser" component={AddUser} />
 			<Route exact path="/alumni" component={AlumniPage} />
 			<Route exact path="/register" component={Register} />
 			<Route exact path="/login" component={Login} />

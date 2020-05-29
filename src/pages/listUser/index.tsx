@@ -37,7 +37,7 @@ const M_DELETE_USER = gql`
 `;
 
 const UserPage: React.FunctionComponent = () => {
-	const { isTokenValid, level, token } = useAuth();
+	const { isLevelMatch, level, token } = useAuth();
 	const history = useHistory();
 	const [users, setUsers] = useState<userNoPass[]>([
 		{
@@ -65,7 +65,7 @@ const UserPage: React.FunctionComponent = () => {
 			},
 		},
 		variables: {
-			limit: 2,
+			limit: 20,
 			page: currentPage,
 		},
 		onCompleted: (data) => {
@@ -101,18 +101,24 @@ const UserPage: React.FunctionComponent = () => {
 	};
 
 	useEffect(() => {
-		isTokenValid();
+		isLevelMatch(level, 0);
 	}, []);
 
 	if (loading) return <h1>Loading...</h1>;
 
 	return (
 		<>
-			<Segment basic disabled={loading}>
+			<Segment basic disabled={loading || delLoading}>
 				<h1>Daftar Akun Pengguna</h1>
 				<Label color="olive">jumlah pengguna: {totalUser}</Label>
 				<Label color="olive">jumlah halaman: {totalpage}</Label>
-				<Table color="blue" columns={3} stackable>
+				<Table
+					color="blue"
+					columns={3}
+					stackable
+					celled
+					textAlign="center"
+				>
 					<Table.Header>
 						<Table.Row>
 							<Table.HeaderCell
@@ -147,7 +153,7 @@ const UserPage: React.FunctionComponent = () => {
 					</Table.Header>
 					<Table.Body>
 						{users.map((user, index: number) => (
-							<Table.Row warning={loading}>
+							<Table.Row warning={delLoading}>
 								<Table.Cell width={level == 0 ? 4 : 6}>
 									{user.name}
 								</Table.Cell>
