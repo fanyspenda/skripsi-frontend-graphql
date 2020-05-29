@@ -5,7 +5,7 @@ import { userType } from "interfaces/userInterface";
 import { useHistory } from "react-router-dom";
 import { page } from "interfaces/pageInterface";
 import CustomPagination from "components/CustomPagination";
-import { useQuery } from "react-apollo";
+import { useQuery, useMutation } from "react-apollo";
 import { gql } from "apollo-boost";
 
 type userNoPass = Omit<userType, "password">;
@@ -28,6 +28,11 @@ const Q_USERS_WITH_PAGINATION = gql`
 			}
 			totalData
 		}
+	}
+`;
+const M_DELETE_USER = gql`
+	mutation deleteUser($id: String!) {
+		deleteUser(id: $id)
 	}
 `;
 
@@ -73,8 +78,23 @@ const UserPage: React.FunctionComponent = () => {
 			return <Label color="red">{error.message}</Label>;
 		},
 	});
+	const [deleteUser, { loading: delLoading, error: delError }] = useMutation(
+		M_DELETE_USER,
+		{
+			context: {
+				headers: {
+					authorization: `bearer ${token}`,
+				},
+			},
+			onCompleted: () => window.location.reload(true),
+		}
+	);
 
-	const handleDeleteClick = (id: string) => {};
+	const handleDeleteClick = (id: string) => {
+		deleteUser({
+			variables: { id },
+		});
+	};
 
 	const handleEditClick = (user: userNoPass) => {
 		history.push("/editUser", user);
