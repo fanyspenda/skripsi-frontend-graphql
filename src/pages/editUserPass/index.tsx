@@ -5,47 +5,49 @@ import { useFormik } from "formik";
 import UserPassSchema from "./changePassValidation";
 import { useLocation, useHistory } from "react-router-dom";
 import useAuth from "hooks/useAuth";
-import Axios from "axios";
-import UseLoading from "hooks/useLoading";
+import { useMutation } from "react-apollo";
+import { gql } from "apollo-boost";
+
+const M_RESET_PASSWORD = gql`
+	mutation resetPassword($id: String!, $password: String!) {
+		resetPass(id: $id, password: $password)
+	}
+`;
 
 const EditUserPass: React.FunctionComponent = () => {
 	const user: any = useLocation().state;
 	const history = useHistory();
-	const { token, isLevelMatch, level } = useAuth();
-	const { isLoading, setLoadingToFalse, setLoadingToTrue } = UseLoading();
+	const { isLevelMatch, level, token } = useAuth();
+	const [resetPass, { loading, error }] = useMutation(M_RESET_PASSWORD, {
+		context: {
+			headers: {
+				authorization: `bearer ${token}`,
+			},
+		},
+		onCompleted: () => history.push("/users"),
+	});
 	const formik = useFormik({
 		initialValues: { password: "", retypePassword: "" },
 		validationSchema: UserPassSchema,
 		onSubmit: (values) => {
-			setLoadingToTrue();
-			Axios.put(
-				`http://localhost:4000/user/resetPass/${user.id}`,
-				{
+			resetPass({
+				variables: {
+					id: user.id,
 					password: values.password,
 				},
-				{
-					headers: {
-						authorization: `bearer ${token}`,
-					},
-				}
-			)
-				.then(() => {
-					history.replace("/users");
-				})
-				.catch((err) => {
-					alert(err);
-				})
-				.finally(() => setLoadingToFalse());
+			});
 		},
 	});
-	isLevelMatch(level, 0);
+
 	useEffect(() => {
+		isLevelMatch(level, 0);
 		if (!user.id) history.replace("/users");
 	}, []);
+
 	return (
 		<form onSubmit={formik.handleSubmit}>
 			<Card centered>
-				<Segment basic disabled={isLoading}>
+				<Segment basic disabled={loading}>
 					<h1>RESET PASSWORD</h1>
 					<Segment textAlign="center" basic>
 						<Label color="yellow">
