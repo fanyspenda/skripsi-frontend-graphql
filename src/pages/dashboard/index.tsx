@@ -56,7 +56,7 @@ const Dashboard: React.SFC<DashboardProps> = () => {
 	const [sourceData, setSourceData] = useState<totalDataProps[]>([
 		{ label: "", total: 0, icon: undefined, color: undefined },
 	]);
-	const { error, data, loading } = useQuery(Q_GET_ALL_TOTAL, {
+	const { error } = useQuery(Q_GET_ALL_TOTAL, {
 		context: {
 			headers: {
 				authorization: `bearer ${token}`,
@@ -102,11 +102,6 @@ const Dashboard: React.SFC<DashboardProps> = () => {
 	});
 
 	if (error) return <Label color="red">{error.message}</Label>;
-
-	// const arraySource = [
-	// 	{ label: "Linkedin", total: data.linkedinWithPagination.totalData },
-	// 	{ label: "Input Manual", total: data.alumniWithPagination.totalData },
-	// ];
 	return (
 		<>
 			<RedirectToLogin />

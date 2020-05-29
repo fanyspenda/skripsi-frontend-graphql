@@ -4,11 +4,11 @@ import { Label, Dropdown, DropdownProps } from "semantic-ui-react";
 interface CustomDropdownProps {
 	label: string;
 	placeholder: string;
-	value: string;
+	value: string | number;
 	onChange(event: React.SyntheticEvent<any>, data: DropdownProps): void;
 	options: Array<{
 		text: string;
-		value: string;
+		value: string | number;
 	}>;
 	touched: boolean | undefined;
 	error: string | undefined;

@@ -19,7 +19,7 @@ const App: React.FunctionComponent<{}> = () => {
 			<TokenContextProvider>
 				<Router history={history}>
 					<Menu inverted color="blue" attached stackable>
-						<Menu.Item header as={Link} to="/">
+						<Menu.Item header as={Link} to="/" exact>
 							<Icon name="graduation" />
 							Alumni Tracker
 						</Menu.Item>
