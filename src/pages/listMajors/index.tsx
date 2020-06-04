@@ -6,6 +6,7 @@ import { TokenContext } from "contexts/tokenContext";
 import { major } from "interfaces/majorInterface";
 import CustomPagination from "components/CustomPagination";
 import { useHistory, useLocation } from "react-router-dom";
+import useAuth from "hooks/useAuth";
 
 const Q_GET_MAJORS = gql`
 	query majorWithPagination($page: Int!) {
@@ -37,7 +38,7 @@ const MajorPage: React.FunctionComponent = () => {
 	const location: any = useLocation();
 	const previousPage = (location.state?.page as number) || 1;
 	const history = useHistory();
-	const { token } = useContext(TokenContext);
+	const { token, level } = useAuth();
 	const [currentPage, setCurrentPage] = useState(previousPage);
 	const { loading, data, error } = useQuery(Q_GET_MAJORS, {
 		context: {
@@ -78,53 +79,61 @@ const MajorPage: React.FunctionComponent = () => {
 						<Table.HeaderCell
 							rowSpan="2"
 							textAlign="center"
-							width="11"
+							width={level == 0 ? "11" : "16"}
 						>
 							<h4>Nama Jurusan</h4>
 						</Table.HeaderCell>
-						<Table.HeaderCell
-							colSpan="2"
-							textAlign="center"
-							width="4"
-						/>
+						{level == 0 ? (
+							<Table.HeaderCell
+								colSpan="2"
+								textAlign="center"
+								width="4"
+							/>
+						) : null}
 					</Table.Row>
 				</Table.Header>
 				<Table.Body>
 					{data?.majorWithPagination.majors.map(
 						(major: major, index: number) => (
 							<Table.Row warning={delLoading}>
-								<Table.Cell width="11">{major.name}</Table.Cell>
-								<Table.Cell width="2">
-									<Button
-										color="yellow"
-										basic
-										fluid
-										onClick={() =>
-											history.push(
-												"/editMajor",
-												major._id
-											)
-										}
-									>
-										EDIT
-									</Button>
+								<Table.Cell width={level == 0 ? "11" : "16"}>
+									{major.name}
 								</Table.Cell>
-								<Table.Cell width="2">
-									<Button
-										color="red"
-										basic
-										fluid
-										onClick={() =>
-											deleteMajor({
-												variables: {
-													id: major._id,
-												},
-											})
-										}
-									>
-										HAPUS
-									</Button>
-								</Table.Cell>
+								{level == 0 ? (
+									<>
+										<Table.Cell width="2">
+											<Button
+												color="yellow"
+												basic
+												fluid
+												onClick={() =>
+													history.push(
+														"/editMajor",
+														major._id
+													)
+												}
+											>
+												EDIT
+											</Button>
+										</Table.Cell>
+										<Table.Cell width="2">
+											<Button
+												color="red"
+												basic
+												fluid
+												onClick={() =>
+													deleteMajor({
+														variables: {
+															id: major._id,
+														},
+													})
+												}
+											>
+												HAPUS
+											</Button>
+										</Table.Cell>
+									</>
+								) : null}
 							</Table.Row>
 						)
 					)}

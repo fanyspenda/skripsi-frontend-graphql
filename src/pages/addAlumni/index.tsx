@@ -78,8 +78,8 @@ const AddAlumni: React.FunctionComponent = () => {
 			await addAlumni({
 				variables: {
 					name: values.name,
-					entry_year: values.entry_year,
-					graduate_year: values.graduate_year,
+					entry_year: parseInt(values.entry_year as string),
+					graduate_year: parseInt(values.graduate_year as string),
 					major: values.major,
 					work_at: values.work_at,
 					work_position: values.work_position,

@@ -21,6 +21,7 @@ import { TokenContext } from "contexts/tokenContext";
 import AlumniList from "./alumniList";
 import RedirectToLogin from "components/RedirectToLogin";
 import { useFormik } from "formik";
+import useAuth from "hooks/useAuth";
 
 interface alumniListInterface {
 	_id: string;
@@ -32,7 +33,7 @@ interface alumniListInterface {
 }
 
 const AlumniPage: React.FunctionComponent<{}> = () => {
-	const { token } = useContext(TokenContext);
+	const { token, isLevelMatch, level } = useAuth();
 	const [search, setSearch] = useState("");
 	const [alumniL, setAlumniL] = useState<alumniListInterface[]>([
 		{
@@ -224,14 +225,16 @@ const AlumniPage: React.FunctionComponent<{}> = () => {
 						<Grid.Column width={8} textAlign="left">
 							<h1>Data Linkedin</h1>
 						</Grid.Column>
-						<Grid.Column width={8} textAlign="right">
-							<Button
-								onClick={() => handleLinkedinScrap()}
-								color="orange"
-							>
-								Scraping Ulang
-							</Button>
-						</Grid.Column>
+						{level == 0 ? (
+							<Grid.Column width={8} textAlign="right">
+								<Button
+									onClick={() => handleLinkedinScrap()}
+									color="orange"
+								>
+									Scraping Ulang
+								</Button>
+							</Grid.Column>
+						) : null}
 					</Grid.Row>
 					<AlumniList
 						alumni={alumniL}

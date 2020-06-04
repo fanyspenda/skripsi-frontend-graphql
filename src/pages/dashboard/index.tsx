@@ -2,12 +2,8 @@ import React, { useContext, useState } from "react";
 import RedirectToLogin from "components/RedirectToLogin";
 import {
 	Segment,
-	Card,
-	Statistic,
-	Icon,
 	Label,
 	Grid,
-	StrictStatisticProps,
 	IconProps,
 	StatisticProps,
 	Divider,
@@ -15,10 +11,8 @@ import {
 import { gql } from "apollo-boost";
 import { useQuery } from "react-apollo";
 import { TokenContext } from "contexts/tokenContext";
-import { isArray } from "util";
 import StatisticCard from "./StatisticCard";
-
-export interface DashboardProps {}
+import useAuth from "hooks/useAuth";
 
 interface totalDataProps {
 	label: string;
@@ -29,27 +23,16 @@ interface totalDataProps {
 
 const Q_GET_ALL_TOTAL = gql`
 	query counter {
-		countWorkingAlumni {
-			total
-		}
-		countNotWorkingAlumni {
-			total
-		}
-
-		linkedinWithPagination {
-			totalData
-		}
-		alumniWithPagination {
-			totalData
-		}
-		countTotalAlumni {
-			total
-		}
+		countWorkingAlumni
+		countNotWorkingAlumni
+		countTotalAlumni
+		countLinkedin
+		countAlumniManual
 	}
 `;
 
-const Dashboard: React.SFC<DashboardProps> = () => {
-	const { token } = useContext(TokenContext);
+const Dashboard: React.FunctionComponent = () => {
+	const { token, isTokenValid } = useAuth();
 	const [totalData, setTotalData] = useState<totalDataProps[]>([
 		{ label: "", total: 0, icon: undefined, color: undefined },
 	]);
@@ -68,19 +51,19 @@ const Dashboard: React.SFC<DashboardProps> = () => {
 					label: "Alumni Terdaftar",
 					icon: "graduation",
 					color: "blue",
-					total: data.countTotalAlumni.total,
+					total: data.countTotalAlumni,
 				},
 				{
 					label: "Sudah Bekerja",
 					icon: "suitcase",
 					color: "green",
-					total: data.countWorkingAlumni.total,
+					total: data.countWorkingAlumni,
 				},
 				{
 					label: "Belum Bekerja",
 					icon: "group",
 					color: "red",
-					total: data.countNotWorkingAlumni.total,
+					total: data.countNotWorkingAlumni,
 				},
 			]);
 
@@ -89,13 +72,13 @@ const Dashboard: React.SFC<DashboardProps> = () => {
 					label: "Linkedin",
 					icon: "linkedin",
 					color: "orange",
-					total: data.linkedinWithPagination.totalData,
+					total: data.countLinkedin,
 				},
 				{
 					label: "Input Manual",
 					icon: "edit",
 					color: "orange",
-					total: data.alumniWithPagination.totalData,
+					total: data.countAlumniManual,
 				},
 			]);
 		},
@@ -104,10 +87,8 @@ const Dashboard: React.SFC<DashboardProps> = () => {
 	if (error) return <Label color="red">{error.message}</Label>;
 	return (
 		<>
-			<RedirectToLogin />
-
+			{isTokenValid()}
 			<h1>Data Alumni</h1>
-
 			<Segment basic>
 				<Grid stackable textAlign="center">
 					<Grid.Row>

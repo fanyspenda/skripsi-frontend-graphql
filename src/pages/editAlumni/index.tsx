@@ -146,7 +146,7 @@ const EditAlumni: React.FunctionComponent = () => {
 	if (loading) return <h1>loading...</h1>;
 	return (
 		<Segment basic disabled={mLoading}>
-			<h1>Tambah data Alumni</h1>
+			<h1>Edit data Alumni</h1>
 			<form onSubmit={formik.handleSubmit}>
 				<CustomInputForm
 					label="Nama"

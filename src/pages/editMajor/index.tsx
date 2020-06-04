@@ -132,7 +132,14 @@ const EditMajor: React.FunctionComponent = () => {
 					onChange={formik.handleChange}
 					value={formik.values.name}
 				/>
-				<Button type="submit">Tambah Jurusan</Button>
+				<Segment textAlign="right" basic>
+					<Button type="submit" color="blue">
+						Edit Jurusan
+					</Button>
+					<Button onClick={() => history.push("/majors")}>
+						Batal
+					</Button>
+				</Segment>
 			</Form>
 		</Segment>
 	);
