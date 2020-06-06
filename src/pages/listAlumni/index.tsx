@@ -17,7 +17,6 @@ import {
 } from "./alumniQuery";
 import axios from "axios";
 import { useQuery, useLazyQuery } from "@apollo/react-hooks";
-import { TokenContext } from "contexts/tokenContext";
 import AlumniList from "./alumniList";
 import RedirectToLogin from "components/RedirectToLogin";
 import { useFormik } from "formik";

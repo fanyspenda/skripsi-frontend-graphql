@@ -2,7 +2,7 @@ import { gql } from "apollo-boost";
 
 export const Q_ALUMNI_WITH_PAGINATION = gql`
 	query alumniWithPagination($page: Int!, $name: String) {
-		alumniWithPagination(page: $page, limit: 40) {
+		alumniWithPagination(page: $page, limit: 40, name: $name) {
 			alumni {
 				_id
 				name
