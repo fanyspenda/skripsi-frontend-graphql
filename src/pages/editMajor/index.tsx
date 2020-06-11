@@ -81,7 +81,7 @@ const EditMajor: React.FunctionComponent = () => {
 	if (loading) return <h1>loading...</h1>;
 	if (error) return <Label color="red">{error.message}</Label>;
 	return (
-		<Segment basic>
+		<Segment basic loading={mLoading}>
 			<h1>Edit Jurusan</h1>
 			<Form onSubmit={formik.handleSubmit}>
 				<Form.Group inline>

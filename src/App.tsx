@@ -10,7 +10,7 @@ import PageRouter from "PageRouter";
 
 const App: React.FunctionComponent<{}> = () => {
 	const client = new ApolloClient({
-		uri: "http://localhost:4100/graphql",
+		uri: "https://sialumni-backend-graphql.herokuapp.com/graphql",
 	});
 
 	const history = createBrowserHistory();

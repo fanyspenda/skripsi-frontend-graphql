@@ -1,11 +1,12 @@
 import { Segment, Card, Label } from "semantic-ui-react";
 import React, { useEffect, useState, useContext } from "react";
 import { RouteComponentProps } from "react-router-dom";
-import { useLocation } from "react-router";
+import { useLocation, useHistory } from "react-router";
 import alumniInterface from "../../interfaces/alumniInterface";
 import { useQuery } from "react-apollo";
 import { gql } from "apollo-boost";
 import { TokenContext } from "contexts/tokenContext";
+import useAuth from "hooks/useAuth";
 
 interface DetailAlumniInterface extends alumniInterface {
 	_id: string;
@@ -18,8 +19,10 @@ interface AlumniIdSource {
 
 const DetailAlumni: React.FunctionComponent<RouteComponentProps> = () => {
 	const location = useLocation<AlumniIdSource>().state;
+	const history = useHistory();
+	if (!location) window.location.href = "/alumni";
 	const alumniSource = location.data_source;
-	const { token } = useContext(TokenContext);
+	const { token, isTokenValid } = useAuth();
 	const [alumni, setAlumni] = useState<DetailAlumniInterface>({
 		_id: "",
 		name: "",
@@ -90,7 +93,7 @@ const DetailAlumni: React.FunctionComponent<RouteComponentProps> = () => {
 	};
 
 	const isEmailEmpty = (email: string, name: string) => {
-		if (email == "") {
+		if (email == "" || email == "-@gmail.com") {
 			return `email tidak dapat ditemukan`;
 		} else {
 			return `anda dapat menghubungi ${name} dengan menghubungi email ${email}`;
@@ -112,6 +115,7 @@ const DetailAlumni: React.FunctionComponent<RouteComponentProps> = () => {
 	if (loading) return <h1>Loading...</h1>;
 	return (
 		<Segment basic>
+			{isTokenValid()}
 			<Card centered fluid>
 				<Card.Content>
 					<Card.Header>{name}</Card.Header>

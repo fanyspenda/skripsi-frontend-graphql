@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useFormik } from "formik";
-import { Segment, Button } from "semantic-ui-react";
+import { Segment, Button, Label } from "semantic-ui-react";
 import axios from "axios";
 import CustomInputForm from "../../components/CustomInputForm";
 import CustomDropdownForm from "../../components/CustomDropdownForm";
@@ -10,6 +10,8 @@ import AlumniSchema from "./editAlumniValidation";
 import { gql } from "apollo-boost";
 import { useQuery, useMutation } from "react-apollo";
 import { TokenContext } from "contexts/tokenContext";
+import useAuth from "hooks/useAuth";
+import UseLoading from "hooks/useLoading";
 
 interface inputAlumni extends alumniInterface {
 	data_source: string;
@@ -71,9 +73,10 @@ const M_UPDATE_ALUMNI = gql`
 	}
 `;
 const EditAlumni: React.FunctionComponent = () => {
-	const { token } = useContext(TokenContext);
+	const { token, level, isLevelMatch } = useAuth();
 	const location: any = useLocation();
 	const history = useHistory();
+
 	const [alumni, setAlumni] = useState<inputAlumni>({
 		name: "",
 		major: "",
@@ -94,6 +97,7 @@ const EditAlumni: React.FunctionComponent = () => {
 		variables: {
 			id: location.state,
 		},
+		fetchPolicy: "network-only",
 		onCompleted: (data) => {
 			let majorData: major[] = [];
 			data.majorWithPagination.majors.map(
@@ -125,8 +129,8 @@ const EditAlumni: React.FunctionComponent = () => {
 	const formik = useFormik({
 		enableReinitialize: true,
 		initialValues: alumni,
-		onSubmit: (values: inputAlumni) => {
-			updateAlumni({
+		onSubmit: async (values: inputAlumni) => {
+			await updateAlumni({
 				variables: {
 					id: location.state,
 					name: values.name,
@@ -145,9 +149,14 @@ const EditAlumni: React.FunctionComponent = () => {
 
 	if (loading) return <h1>loading...</h1>;
 	return (
-		<Segment basic disabled={mLoading}>
+		<Segment basic loading={mLoading}>
 			<h1>Edit data Alumni</h1>
 			<form onSubmit={formik.handleSubmit}>
+				{error || mError ? (
+					<Label color="red">
+						{error?.message || mError?.message}
+					</Label>
+				) : null}
 				<CustomInputForm
 					label="Nama"
 					name="name"

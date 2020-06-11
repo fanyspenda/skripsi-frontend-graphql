@@ -47,8 +47,9 @@ const AddMajor: React.FunctionComponent = () => {
 	});
 
 	return (
-		<Segment basic>
+		<Segment basic loading={loading}>
 			<h1>Tambah Jurusan</h1>
+			{error ? <Label>{error?.message}</Label> : null}
 			<Form onSubmit={formik.handleSubmit}>
 				<Form.Group inline>
 					<div className="field">

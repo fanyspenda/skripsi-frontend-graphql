@@ -10,6 +10,8 @@ import addAlumniValidationSchema from "./addAlumniValidation";
 import { gql } from "apollo-boost";
 import { useQuery, useMutation } from "react-apollo";
 import { TokenContext } from "contexts/tokenContext";
+import useAuth from "hooks/useAuth";
+import UseLoading from "hooks/useLoading";
 interface inputAlumni extends alumniInterface {
 	data_source: string;
 }
@@ -69,12 +71,14 @@ const M_ADD_ALUMNI = gql`
 `;
 
 const AddAlumni: React.FunctionComponent = () => {
-	const { token } = useContext(TokenContext);
+	const { token, isLevelMatch, level } = useAuth();
 	const [majors, setMajors] = useState<major[]>([{ text: "", value: "" }]);
+	const { isLoading, setLoadingToFalse, setLoadingToTrue } = UseLoading();
 	const history = useHistory();
 	const formik = useFormik({
 		initialValues: initialValueAlumni,
 		onSubmit: async (values) => {
+			setLoadingToTrue();
 			await addAlumni({
 				variables: {
 					name: values.name,
@@ -87,6 +91,7 @@ const AddAlumni: React.FunctionComponent = () => {
 					data_source: values.data_source,
 				},
 			});
+			setLoadingToFalse();
 		},
 		validationSchema: addAlumniValidationSchema,
 	});
@@ -96,6 +101,7 @@ const AddAlumni: React.FunctionComponent = () => {
 				authorization: `bearer ${token}`,
 			},
 		},
+		fetchPolicy: "cache-and-network",
 		onCompleted: (data) => {
 			let majorData: major[] = [];
 			data.majorWithPagination.majors.map(
@@ -127,12 +133,14 @@ const AddAlumni: React.FunctionComponent = () => {
 	});
 
 	if (loading) return <h1>loading...</h1>;
-	if (error || submitError)
-		return (
-			<Label color="red">{error?.message || submitError?.message}</Label>
-		);
 	return (
-		<Segment basic>
+		<Segment basic loading={isLoading}>
+			{error || submitError ? (
+				<Label color="red">
+					{error?.message || submitError?.message}
+				</Label>
+			) : null}
+			{isLevelMatch(level, 0)}
 			<h1>Tambah data Alumni</h1>
 			<form onSubmit={formik.handleSubmit}>
 				<CustomInputForm

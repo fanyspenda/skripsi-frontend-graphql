@@ -79,6 +79,7 @@ const AlumniCard: React.FunctionComponent<alumniData> = ({ alumni, token }) => {
 					<EditDeleteButton
 						onEditClick={() => handleEditClick(alumni._id)}
 						onDeleteClick={() => handleDeleteClick()}
+						isDisabled={deleteLoading}
 					/>
 				) : null}
 			</Card.Content>

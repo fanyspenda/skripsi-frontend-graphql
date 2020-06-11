@@ -74,7 +74,13 @@ const EditUserPass: React.FunctionComponent = () => {
 						touched={formik.touched.retypePassword}
 					/>
 				</Segment>
-				<Button type="submit" color="blue" fluid size="huge">
+				<Button
+					type="submit"
+					color="blue"
+					fluid
+					size="huge"
+					loading={loading}
+				>
 					UBAH PASSWORD
 				</Button>
 			</Card>

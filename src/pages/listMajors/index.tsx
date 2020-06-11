@@ -65,7 +65,7 @@ const MajorPage: React.FunctionComponent = () => {
 	if (loading) return <h1>Loading...</h1>;
 	if (error) return <Label color="red">{error.message}</Label>;
 	return (
-		<Segment basic>
+		<Segment basic loading={delLoading}>
 			<h1>Jurusan Terdaftar</h1>
 			<Label color="olive">
 				jumlah jurusan: {data.majorWithPagination.totalData}
